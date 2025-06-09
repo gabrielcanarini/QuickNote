@@ -28,7 +28,7 @@ export default function Home() {
     <div>
       HOME <Link href={"/login"}>Login Page</Link>
       <button onClick={signOut}>SognOut</button>
-      <Link href={"/notes"}>Notes</Link>
+      <Link href={"/categories"}>Notes</Link>
     </div>
   );
 }

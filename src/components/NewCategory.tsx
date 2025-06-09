@@ -26,8 +26,13 @@ export default function NewCategory({
   const [description, setDescription] = useState("");
   const [open, setOpen] = useState(false);
 
-  const notify = () =>
+  const notifyError = () =>
     toast.error("Errore nella creazione della categoria", {
+      duration: 5000,
+      icon: "🚨",
+    });
+  const notifyCatExists = () =>
+    toast.error("Non puoi avere piú di una categoria con lo stesso nome", {
       duration: 5000,
       icon: "🚨",
     });
@@ -42,7 +47,16 @@ export default function NewCategory({
     } = await supabase.auth.getUser();
 
     if (!user || userError) {
-      notify();
+      notifyError();
+      return;
+    }
+
+    const { data: control } = await supabase
+      .from("categories")
+      .select("*")
+      .eq("name", name);
+    if (control?.length != 0) {
+      notifyCatExists();
       return;
     }
 
@@ -53,7 +67,7 @@ export default function NewCategory({
     });
 
     if (error) {
-      notify();
+      notifyError();
       return;
     }
 
@@ -67,9 +81,11 @@ export default function NewCategory({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <Toaster />
-      {/* Usa DialogTrigger senza onClick, lascia che gestisca l'apertura */}
       <DialogTrigger asChild>
-        <Button className="px-5 py-2 text-base" variant="outline">
+        <Button
+          className="px-5 py-2 text-base cursor-pointer"
+          variant="outline"
+        >
           + Nuova categoria
         </Button>
       </DialogTrigger>
@@ -95,7 +111,6 @@ export default function NewCategory({
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                required
               />
             </div>
           </div>

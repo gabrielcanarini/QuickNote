@@ -33,6 +33,42 @@ export type Database = {
         }
         Relationships: []
       }
+      n_type: {
+        Row: {
+          created_at: string
+          id: number
+          note_id: string
+          type_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          note_id?: string
+          type_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          note_id?: string
+          type_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "n_type_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "n_type_type_id_fkey"
+            columns: ["type_id"]
+            isOneToOne: false
+            referencedRelation: "note_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       note_types: {
         Row: {
           created_at: string
@@ -56,38 +92,38 @@ export type Database = {
       }
       notes: {
         Row: {
+          cat_id: string
           content_md: string
           created_at: string
           id: string
           title: string
-          type: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
+          cat_id?: string
           content_md: string
           created_at?: string
           id?: string
           title: string
-          type?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
+          cat_id?: string
           content_md?: string
           created_at?: string
           id?: string
           title?: string
-          type?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "notes_type_fkey"
-            columns: ["type"]
+            foreignKeyName: "notes_cat_id_fkey"
+            columns: ["cat_id"]
             isOneToOne: false
-            referencedRelation: "note_types"
+            referencedRelation: "categories"
             referencedColumns: ["id"]
           },
         ]

@@ -16,13 +16,17 @@ export default function CardCategory({
   description: string;
   onCategoryDeleted: () => void;
 }) {
-  const notify = () =>
+  const notifyError = () =>
     toast.error("Errore nella cancellazione della categoria", {
       duration: 5000,
       icon: "🚨",
     });
+  const notifySuccess = () =>
+    toast.success(`${name} eliminata`, {
+      duration: 5000,
+    });
   return (
-    <Card className="relative rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+    <Card className="relative rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col">
       <Button
         onClick={async () => {
           const supabase = createClient();
@@ -30,7 +34,11 @@ export default function CardCategory({
             .from("categories")
             .delete()
             .eq("id", id);
-          if (error) notify();
+          if (error) {
+            notifyError();
+          } else {
+            notifySuccess();
+          }
           onCategoryDeleted();
         }}
         className="cursor-pointer absolute top-3 right-3 text-red-500 hover:text-red-700 transition-colors"
@@ -41,20 +49,25 @@ export default function CardCategory({
       </Button>
 
       <CardHeader>
-        <CardTitle className="text-xl font-semibold">{name}</CardTitle>
+        <CardTitle className="text-xl font-semibold line-clamp-2">
+          {name}
+        </CardTitle>
       </CardHeader>
 
-      <CardContent>
-        <p className="text-sm text-muted-foreground mb-6">{description}</p>
-
-        <Link href={`/dashboard/${name}`}>
-          <Button
-            className="w-full border-2 cursor-pointer"
-            variant="secondary"
-          >
-            Apri
-          </Button>
-        </Link>
+      <CardContent className="flex flex-col flex-grow">
+        <p className="text-sm text-muted-foreground mb-6 line-clamp-4">
+          {description}
+        </p>
+        <div className="mt-auto">
+          <Link href={`/categories/${name}`}>
+            <Button
+              className="w-full border-2 cursor-pointer"
+              variant="secondary"
+            >
+              Apri
+            </Button>
+          </Link>
+        </div>
       </CardContent>
     </Card>
   );
