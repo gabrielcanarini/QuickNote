@@ -7,7 +7,6 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
-  DialogOverlay,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
@@ -61,7 +60,7 @@ export default function NewCategory({
     }
 
     const { error } = await supabase.from("categories").insert({
-      name,
+      name: name.toLowerCase(),
       description,
       user_id: user.id,
     });
@@ -89,7 +88,6 @@ export default function NewCategory({
           + Nuova categoria
         </Button>
       </DialogTrigger>
-      <DialogOverlay className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={newCat}>
           <DialogHeader>

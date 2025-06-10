@@ -50,7 +50,7 @@ export default function CardCategory({
 
       <CardHeader>
         <CardTitle className="text-xl font-semibold line-clamp-2">
-          {name}
+          {name.toUpperCase()}
         </CardTitle>
       </CardHeader>
 
