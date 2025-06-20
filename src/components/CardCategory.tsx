@@ -44,6 +44,7 @@ export default function CardCategory({
         className="cursor-pointer absolute top-3 right-3 text-red-500 hover:text-red-700 transition-colors"
         aria-label={`Elimina categoria ${name}`}
         title="Elimina categoria"
+        variant="ghost"
       >
         🗑️
       </Button>

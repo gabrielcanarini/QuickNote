@@ -1,9 +1,11 @@
 "use client";
+import CardNote from "@/components/CardNote";
 import { Tables } from "@/database.types";
 import { createClient } from "@/lib/supabase/client";
 import { use } from "react";
+import NewNote from "@/components/NewNote";
 
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 
 type NoteWithTypes = Tables<"notes"> & {
   n_type: {
@@ -34,8 +36,21 @@ export default function CatPage({
     );
   }
 
-  console.log(data);
-  return <div>{name_cat}</div>;
+  return (
+    <main className="p-8 max-w-5xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-extrabold">Scegli una nota</h1>
+        <NewNote onNoteCreated={() => mutate("categories")} />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {data &&
+          data.map((e) => {
+            return <CardNote key={e.id} />;
+          })}
+      </div>
+    </main>
+  );
 }
 
 const fetcherNota = async (cat: string) => {
@@ -66,7 +81,7 @@ const fetcherNota = async (cat: string) => {
     types: note.n_type.map((nt) => nt.note_types),
   }));
 
-  console.log(notesWithTypes);
+  // console.log(notesWithTypes);
   return notesWithTypes ?? [];
 };
 
