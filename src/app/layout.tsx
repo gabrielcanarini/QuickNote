@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ModeToggle } from "@/components/ui/toggle-mode-theme";
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
@@ -19,13 +20,13 @@ export default function RootLayout({
     <html lang="it" suppressHydrationWarning>
       <head />
       <body className={`${inter.className} antialiased`}>
+        <Toaster />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <ModeToggle />
           {children}
         </ThemeProvider>
       </body>

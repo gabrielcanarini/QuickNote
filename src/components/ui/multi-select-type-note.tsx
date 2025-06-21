@@ -9,6 +9,7 @@ import {
   WandSparkles,
   TrashIcon,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -150,9 +151,48 @@ export const MultiSelect = React.forwardRef<
     const [isAnimating, setIsAnimating] = React.useState(false);
 
     const [newTypeName, setNewTypeName] = React.useState("");
+    const [isTypeOpen, setIsTypeOpen] = React.useState<boolean>(false);
 
     const { data: typeUser } = useSWR("typeUser", getType);
     options = typeUser || [];
+
+    const notifyExistsType = () =>
+      toast.error("Non puoi avere piú di un tipo con lo stesso nome", {
+        duration: 5000,
+        icon: "🚨",
+      });
+    const notifyErrorType = () =>
+      toast.error("Errore nella creazione del tipo", {
+        duration: 5000,
+        icon: "🚨",
+      });
+
+    const handleAddType = async () => {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      const userId = user!.id;
+
+      const { error } = await supabase
+        .from("note_types")
+        .insert({ user_id: userId, name: newTypeName.toLowerCase() });
+
+      if (error) {
+        if (error.code === "23505") {
+          console.log(error.code);
+          notifyExistsType();
+          return;
+        }
+        notifyErrorType();
+        return;
+      }
+      toast.success("Tipo creato");
+      setNewTypeName("");
+      setIsTypeOpen(false);
+      mutate("typeUser");
+    };
 
     const handleInputKeyDown = (
       event: React.KeyboardEvent<HTMLInputElement>
@@ -292,7 +332,7 @@ export const MultiSelect = React.forwardRef<
                 onKeyDown={handleInputKeyDown}
                 className="flex-1"
               />
-              <Popover>
+              <Popover open={isTypeOpen} onOpenChange={setIsTypeOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     size="sm"
@@ -321,8 +361,7 @@ export const MultiSelect = React.forwardRef<
                         />
                         <Button
                           onClick={() => {
-                            newTypeUser(newTypeName);
-                            setNewTypeName("");
+                            handleAddType();
                           }}
                         >
                           Crea
@@ -456,26 +495,8 @@ const getType = async (): Promise<OptionType[]> => {
   const dataType: OptionType[] = data.map((e) => ({
     label: e.name,
     value: e.id,
-    icon: undefined, // o puoi fornire un'icona specifica qui
+    icon: undefined,
   }));
 
   return dataType;
-};
-
-const newTypeUser = async (name: string) => {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const userId = user?.id;
-  if (!userId) {
-    //gestire l'errore
-    return;
-  }
-  const { error } = await supabase
-    .from("note_types")
-    .insert({ user_id: userId, name: name });
-
-  mutate("typeUser");
 };

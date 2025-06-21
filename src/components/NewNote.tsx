@@ -13,72 +13,111 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { useState } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { MultiSelect } from "@/components/ui/multi-select-type-note";
 
 export default function NewNote({
   onNoteCreated,
+  nameCat,
 }: {
   onNoteCreated: () => void;
+  nameCat: string;
 }) {
   const [name, setName] = useState("");
   const [open, setOpen] = useState(false);
   const [typeNote, setTypeNote] = useState<string[]>([]);
 
-  //   const notifyError = () =>
-  //     toast.error("Errore nella creazione della categoria", {
-  //       duration: 5000,
-  //       icon: "🚨",
-  //     });
-  //   const notifyCatExists = () =>
-  //     toast.error("Non puoi avere piú di una categoria con lo stesso nome", {
-  //       duration: 5000,
-  //       icon: "🚨",
-  //     });
+  const notifyError = () =>
+    toast.error("Errore nella creazione della nota", {
+      duration: 5000,
+      icon: "🚨",
+    });
+  const notifyCatExists = () =>
+    toast.error(
+      "Non puoi avere piú di una nota con lo stesso nome nella stessa categoria",
+      {
+        duration: 5000,
+        icon: "🚨",
+      }
+    );
 
   const newCat = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // const supabase = createClient();
-    // const {
-    //   data: { user },
-    //   error: userError,
-    // } = await supabase.auth.getUser();
+    const supabase = createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    // if (!user || userError) {
-    //   notifyError();
-    //   return;
-    // }
+    if (!user || userError) {
+      notifyError();
+      return;
+    }
 
-    // const { data: control } = await supabase
-    //   .from("categories")
-    //   .select("*")
-    //   .eq("name", name);
-    // if (control?.length != 0) {
-    //   notifyCatExists();
-    //   return;
-    // }
+    const { data: cat, error: catError } = await supabase
+      .from("categories")
+      .select("id")
+      .eq("name", nameCat)
+      .eq("user_id", user.id)
+      .single();
 
-    // const { error } = await supabase.from("categories").insert({
-    //   name: name.toLowerCase(),
-    //   description,
-    //   user_id: user.id,
-    // });
+    if (catError) {
+      notifyError();
+      return;
+    }
+    const initialContent = [
+      {
+        type: "heading",
+        level: 1, // level come proprietà diretta, non dentro props
+        content: [
+          {
+            type: "text",
+            text: `${name.toUpperCase()}`,
+          },
+        ],
+      },
+      {
+        type: "paragraph",
+        content: [],
+      },
+    ];
 
-    // if (error) {
-    //   notifyError();
-    //   return;
-    // }
+    const { data: dataNote, error } = await supabase
+      .from("notes")
+      .insert({
+        title: name.toLowerCase(),
+        cat_id: cat!.id,
+        content_md: JSON.stringify(initialContent),
+        user_id: user.id,
+      })
+      .select("id")
+      .single();
 
-    // toast.success("Nota creata!");
+    if (error) {
+      if (error.code === "23505") {
+        notifyCatExists();
+        return;
+      }
+      notifyError();
+      return;
+    }
+
+    typeNote.forEach(async (type) => {
+      await supabase.from("n_type").insert({
+        note_id: dataNote.id,
+        type_id: type,
+      });
+    });
+
+    toast.success("Nota creata!");
     setName("");
-    onNoteCreated();
     setOpen(false);
+    onNoteCreated();
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <Toaster />
       <DialogTrigger asChild>
         <Button
           className="px-5 py-2 text-base cursor-pointer"

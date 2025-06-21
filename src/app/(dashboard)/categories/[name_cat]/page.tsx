@@ -6,10 +6,12 @@ import { use } from "react";
 import NewNote from "@/components/NewNote";
 
 import useSWR, { mutate } from "swr";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
-type NoteWithTypes = Tables<"notes"> & {
+export type NoteWithTypes = Tables<"notes"> & {
   n_type: {
-    note_types: Tables<"note_types">[];
+    note_types: Tables<"note_types">;
   }[];
 };
 
@@ -40,13 +42,24 @@ export default function CatPage({
     <main className="p-8 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-extrabold">Scegli una nota</h1>
-        <NewNote onNoteCreated={() => mutate("categories")} />
+        <div className="flex items-center space-x-2">
+          <Button asChild>
+            <Link href="/categories">Torna alle categorie</Link>
+          </Button>
+          <NewNote onNoteCreated={() => mutate(name_cat)} nameCat={name_cat} />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {data &&
           data.map((e) => {
-            return <CardNote key={e.id} />;
+            return (
+              <CardNote
+                key={e.id}
+                noteData={e}
+                onNoteDeleted={() => mutate(name_cat)}
+              />
+            );
           })}
       </div>
     </main>
@@ -81,7 +94,7 @@ const fetcherNota = async (cat: string) => {
     types: note.n_type.map((nt) => nt.note_types),
   }));
 
-  // console.log(notesWithTypes);
+  console.log(notesWithTypes);
   return notesWithTypes ?? [];
 };
 

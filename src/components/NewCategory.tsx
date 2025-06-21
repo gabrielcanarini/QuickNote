@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { useState } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 export default function NewCategory({
   onCategoryCreated,
@@ -49,16 +49,6 @@ export default function NewCategory({
       notifyError();
       return;
     }
-
-    const { data: control } = await supabase
-      .from("categories")
-      .select("*")
-      .eq("name", name);
-    if (control?.length != 0) {
-      notifyCatExists();
-      return;
-    }
-
     const { error } = await supabase.from("categories").insert({
       name: name.toLowerCase(),
       description,
@@ -66,6 +56,10 @@ export default function NewCategory({
     });
 
     if (error) {
+      if (error.code === "23505") {
+        notifyCatExists();
+        return;
+      }
       notifyError();
       return;
     }
@@ -79,7 +73,6 @@ export default function NewCategory({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <Toaster />
       <DialogTrigger asChild>
         <Button
           className="px-5 py-2 text-base cursor-pointer"
