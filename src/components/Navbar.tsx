@@ -19,7 +19,15 @@ import {
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { useTheme } from "next-themes";
 
-export default function Navbar() {
+interface props {
+  profileItem?: boolean;
+  dashboardItem?: boolean;
+}
+
+export default function Navbar({
+  profileItem = true,
+  dashboardItem = false,
+}: props) {
   const { data, error, isLoading } = useSWR("user", getUser);
   const router = useRouter();
   const { setTheme } = useTheme();
@@ -61,9 +69,16 @@ export default function Navbar() {
             <DropdownMenuContent className="w-56" align="start">
               <DropdownMenuLabel>{data?.email}</DropdownMenuLabel>
 
-              <DropdownMenuItem asChild>
-                <Link href={"/profile"}>Profilo</Link>
-              </DropdownMenuItem>
+              {profileItem && (
+                <DropdownMenuItem asChild>
+                  <Link href={"/account"}>Profilo</Link>
+                </DropdownMenuItem>
+              )}
+              {dashboardItem && (
+                <DropdownMenuItem asChild>
+                  <Link href={"/categories"}>Dashboard</Link>
+                </DropdownMenuItem>
+              )}
 
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>Theme</DropdownMenuSubTrigger>
